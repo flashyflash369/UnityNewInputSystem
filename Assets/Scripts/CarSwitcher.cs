@@ -1,9 +1,15 @@
 ﻿
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class CarSwitcher : MonoBehaviour
 {
+
+    public InputActionAsset primaryActions;
+    InputActionMap gameplayActionMap;
+    InputAction nextVehicleInputAction;
+    InputAction resetVechicleAction;
 
     public List<GameObject> vehicles;
     public Transform spawnPoints;
@@ -14,20 +20,28 @@ public class CarSwitcher : MonoBehaviour
     private void Awake()
     {
         m_DriftCamera = GetComponent<DriftCamera>();
+
+        //Actions setup
+
+        gameplayActionMap = primaryActions.FindActionMap("Gameplay");
+
+        nextVehicleInputAction = gameplayActionMap.FindAction("Next Vehicle");
+        resetVechicleAction = gameplayActionMap.FindAction("Reset Vehicle");
+
+        nextVehicleInputAction.performed += context => HandleVehicleChange();
+        resetVechicleAction.performed += context => HandleVehicleReset();  
     }
 
-
-    void Update()
+    private void OnEnable()
     {
-        if (Input.GetKeyUp(KeyCode.K))
-        {
-            HandleVehicleChange();
-        }
+        nextVehicleInputAction.Enable();
+        resetVechicleAction.Enable();
+    }
 
-        if (Input.GetKeyUp(KeyCode.R))
-        {
-            HandleVehicleReset();
-        }
+    private void OnDisable()
+    {
+        nextVehicleInputAction.Disable();
+        resetVechicleAction.Disable();
     }
 
     private void HandleVehicleReset()
