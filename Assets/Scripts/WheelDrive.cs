@@ -15,6 +15,8 @@ public class WheelDrive : MonoBehaviour
     public InputActionAsset primaryActions;
     private InputActionMap gameplayActionMap;
     private InputAction handBrakeInputAction;
+    private InputAction steeringAngleInputAction;
+    private InputAction accelerationInputAction;
 
 
 
@@ -46,10 +48,28 @@ public class WheelDrive : MonoBehaviour
     {
         gameplayActionMap = primaryActions.FindActionMap("Gameplay");
         handBrakeInputAction = gameplayActionMap.FindAction("Handbrake");
+        steeringAngleInputAction = gameplayActionMap.FindAction("Steering Angle");
+        accelerationInputAction = gameplayActionMap.FindAction("Acceleration");
 
         handBrakeInputAction.performed += GetHandBrakeInput;
         handBrakeInputAction.canceled += GetHandBrakeInput;
 
+        steeringAngleInputAction.performed += GetAngleInput;
+        steeringAngleInputAction.canceled += GetAngleInput;
+
+        accelerationInputAction.performed += GetTorqueInput;
+        accelerationInputAction.canceled += GetTorqueInput;
+
+    }
+
+    private void GetAngleInput(InputAction.CallbackContext context)
+    {
+        angle = context.ReadValue<float>() * maxAngle;
+    }
+
+    private void GetTorqueInput(InputAction.CallbackContext context) 
+    {
+        torque = context.ReadValue<float>() * maxTorque;
     }
     
     private void GetHandBrakeInput(InputAction.CallbackContext context)
@@ -60,11 +80,15 @@ public class WheelDrive : MonoBehaviour
     private void OnEnable()
     {
         handBrakeInputAction.Enable();
+        accelerationInputAction.Enable();
+        steeringAngleInputAction.Enable();
     }
 
     private void OnDisable()
     {
         handBrakeInputAction.Disable();
+        accelerationInputAction.Disable();
+        steeringAngleInputAction.Disable();
     }
 
     // Find all the WheelColliders down in the hierarchy.
@@ -91,10 +115,6 @@ public class WheelDrive : MonoBehaviour
     void Update()
     {
         m_Wheels[0].ConfigureVehicleSubsteps(criticalSpeed, stepsBelow, stepsAbove);
-
-        angle = maxAngle * Input.GetAxis("Horizontal");
-        torque = maxTorque * Input.GetAxis("Vertical");
-
 
         foreach (WheelCollider wheel in m_Wheels)
         {
